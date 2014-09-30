@@ -1,0 +1,147 @@
+#! /usr/bin/bash
+
+function usage ()
+{
+cat << END 
+Generate a random password. Based on standard ASCII table.
+Slow but truely random! 
+
+Usage: passwdgen [OPTION]
+
+  -f,   --full             use every printable character 
+
+  -n,   --numbers          use decimal digits
+  -l,   --lower            use lowercase letters
+  -u,   --upper            use uppercase letters
+  -p1                      use punctuation !"#$%&'()*+,-./
+  -p2                                      :;<=>?@
+  -p3                                      [\]^_\`
+  -p4                                      {|}~
+
+  -c N  --characters N     define password length to N characters
+                           if not given default length is N=8
+
+        --help             display this help and exit
+
+If at least one subset is given only given subsets will be used. 
+The above does not apply when using "--full".
+
+If no subsets are given the default output will only include 
+lowercase and numbers.
+ 
+END
+}
+
+function filter ()
+{
+  ((punc1    =   dec >=  33  &  dec <=  47  &  switch_p1 ));
+  ((nums     =   dec >=  48  &  dec <=  57  &  switch_n  ));
+  ((punc2    =   dec >=  58  &  dec <=  64  &  switch_p2 ));
+  ((uc_ltrs  =   dec >=  65  &  dec <=  90  &  switch_uc ));
+  ((punc3    =   dec >=  91  &  dec <=  96  &  switch_p3 ));
+  ((lc_ltrs  =   dec >=  97  &  dec <= 122  &  switch_lc ));
+  ((punc4    =   dec >= 123  &  dec <= 126  &  switch_p4 ));
+  ((default  =   ( dec >= 48  &  dec <= 57   |  dec >= 97  &  dec <= 122 ) & switch_default));
+
+
+  ((nums | punc1 | punc2 | punc3 | punc4 | uc_ltrs | lc_ltrs | default));
+}
+
+
+function print ()
+{
+  oct=`printf %o $dec`;
+  printf "\\$oct";
+}
+
+
+
+
+
+
+for ((i=1 ; i<=7 ; i++)); do 
+  ((d[i]=2, u[i]=1));
+done
+((l=8));
+((switch_default=1<2));
+
+while : 
+do
+  case "$1" in
+    -f | --full)
+      ((switch_n=1));
+      ((switch_p1=1));
+      ((switch_p2=1));
+      ((switch_p3=1));
+      ((switch_p4=1));
+      ((switch_lc=1));
+      ((switch_uc=1));
+      shift
+      ;;
+    -n | --numbers)
+      ((switch_n=1));
+      ((switch_default=2<1));
+      shift
+      ;;
+    -p1)
+      ((switch_p1=1));
+      ((switch_default=2<1));
+      shift
+      ;;
+    -p2)
+      ((switch_p2=1));
+      ((switch_default=2<1));
+      shift
+      ;;
+    -p3)
+      ((switch_p3=1));
+      ((switch_default=2<1));
+      shift
+      ;;
+    -p4)
+      ((switch_p4=1));
+      ((switch_default=2<1));
+      shift
+      ;;
+    -u | --upper)
+      ((switch_uc=1));
+      ((switch_default=2<1));
+      shift
+      ;;
+    -l | --lower)
+      ((switch_lc=1));
+      ((switch_default=2<1));
+      shift
+      ;;
+    -c | --characters)
+      if (($2 > 0)); 
+      then
+        ((l=$2));
+        shift 2
+      else
+        usage;
+        exit 1;
+      fi
+      ;;
+    --help | -*)
+      usage;
+      exit 1;
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+
+((i=1));
+while ((i<=l)); do
+  ((dec=RANDOM%128));
+  if ( filter ); 
+  then
+    ((i++));
+    print ;
+  fi;
+done
+
+echo
