@@ -1,0 +1,54 @@
+#! /usr/bin/bash
+
+
+
+function input ()
+{
+printf "Give resolution   :";
+read rsn;
+printf "Give sample size  :";
+read nmax;                     #posous tyxaious ua paragei
+printf "\n";
+}
+
+
+
+function initial ()
+{
+                               #RANDOM [0 , 2^15-1]
+((gs=2**(15-rsn)));            #(group size) = gs kai (number of groups) = gn 
+((gn=2**rsn));                 #profanws isxuei: (group size) * (number of groups) = 2^15
+for ((i=1 ; i<=gn ; i++)); do
+  ((group[i]=0));
+done;
+}
+
+
+
+function main ()
+{
+for ((n=1 ; n<=nmax ; n++)); do
+  ((tst=1+RANDOM/gs));           #o RANDOM katatasetai se group molis parax8ei
+  ((group[tst]=group[tst]+1));   #....kai to group ton prosmetraei
+done;
+}
+
+
+
+function print ()
+{
+printf "%6s%7s\n" $gn " groups";
+printf "%6s%20s\n\n" $gs " the size of a group";
+printf "%8s%3s%9s\n" "group #" " | " "frequency"
+printf "%20s\n" "=========================";
+for ((i=1 ; i<=gn ; i++)); do
+  printf "%8s%3s%9s\n"   $i " | " ${group[i]}
+done
+}
+
+
+
+input
+initial
+main
+print
